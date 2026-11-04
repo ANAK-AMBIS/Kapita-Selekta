@@ -7,7 +7,7 @@ export default function Beranda() {
     <main className="auth-wrap">
       <div className="auth-card">
         <div>
-          <h1 className="auth-title">Panel Perangkat Desa</h1>
+          <h1 className="auth-title">UMKM Way Huwi</h1>
           <p className="auth-sub" style={{ marginTop: 8 }}>
             Kelola data &amp; iuran UMKM Dusun 6 &mdash; Desa Way Huwi
           </p>

@@ -313,7 +313,7 @@ export default function PanelApp() {
         <div className="pnavin">
           <div>
             <span className="pbrand-title">UMKM Way Huwi</span>
-            <span className="pbrand-sub">Dusun 6 &mdash; Panel Perangkat Desa</span>
+            <span className="pbrand-sub">Dusun 6</span>
           </div>
           <nav className="pnavtabs">
             <button className={"ptab" + (tab === "kelola" ? " aktif" : "")} onClick={() => setTab("kelola")}>

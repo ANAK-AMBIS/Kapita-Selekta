@@ -2,7 +2,7 @@ import "./globals.css";
 
 export const metadata = {
   title: {
-    default: "Panel Perangkat Desa — UMKM Dusun 6, Desa Way Huwi",
+    default: "UMKM Way Huwi — Dusun 6, Desa Way Huwi",
     template: "%s — Panel UMKM Way Huwi",
   },
   description:
