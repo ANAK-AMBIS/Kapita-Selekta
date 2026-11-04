@@ -16,7 +16,6 @@ const DATA_KEY = "umkmweb_umkm";
 const IURAN_KEY = "umkmweb_iuran";
 const USER = "pemdes";
 const PASS = "desa123";
-const DISPLAY_USER = { nama: "Purnomo", role: "Perangkat Desa" };
 
 const rp = (n) => (n || 0).toLocaleString("id-ID");
 const monthKey = (y, m) => y + "-" + String(m + 1).padStart(2, "0");
@@ -33,6 +32,7 @@ function loadLS(key, fallback) {
 export default function PanelApp() {
   const [mounted, setMounted] = useState(false);
   const [masuk, setMasuk] = useState(false);
+  const [user, setUser] = useState("");
 
   /* data utama */
   const [data, setData] = useState(PANEL_SEED);
@@ -76,7 +76,8 @@ export default function PanelApp() {
     }
     const i = loadLS(IURAN_KEY, null);
     if (i && typeof i === "object" && !Array.isArray(i)) setIuran(i);
-    if (window.localStorage.getItem(SESS_KEY) === "1") setMasuk(true);
+    const su = window.localStorage.getItem(SESS_KEY);
+    if (su) { setMasuk(true); setUser(su === "1" ? USER : su); }
     setMounted(true);
   }, []);
 
@@ -148,7 +149,8 @@ export default function PanelApp() {
     e.preventDefault();
     if (lUser.trim().toLowerCase() === USER && lPass === PASS) {
       setLoginErr(false);
-      window.localStorage.setItem(SESS_KEY, "1");
+      window.localStorage.setItem(SESS_KEY, USER);
+      setUser(USER);
       setMasuk(true);
     } else {
       setLoginErr(true);
@@ -325,10 +327,9 @@ export default function PanelApp() {
           </nav>
           <div className="pnavr">
             <div className="puser">
-              <span className="puser-ava">{DISPLAY_USER.nama[0]}</span>
+              <span className="puser-ava">{(user || USER)[0]}</span>
               <span className="puser-info">
-                <span className="puser-name">{DISPLAY_USER.nama}</span>
-                <span className="puser-role">{DISPLAY_USER.role}</span>
+                <span className="puser-name">{user || USER}</span>
               </span>
             </div>
             <button className="pbtn-keluar" onClick={doKeluar}>Keluar</button>

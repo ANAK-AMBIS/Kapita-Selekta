@@ -16,7 +16,7 @@ export default function Beranda() {
         <LoginForm />
 
         <p className="auth-note">
-          Halaman ini khusus perangkat desa. Akun demo: <b>pemdes</b> / <b>desa123</b>
+          Akun demo: <b>pemdes</b> / <b>desa123</b>
         </p>
       </div>
     </main>

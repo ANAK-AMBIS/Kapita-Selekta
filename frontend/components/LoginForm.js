@@ -20,7 +20,7 @@ export default function LoginForm() {
       setError("Nama akun atau kata sandi salah.");
       return;
     }
-    window.localStorage.setItem(SESS_KEY, "1");
+    window.localStorage.setItem(SESS_KEY, USER);
     router.push("/panel");
   }
 
