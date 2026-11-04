@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const SESS_KEY = "umkmweb_sess";
+const USER = "pemdes";
+const PASS = "desa123";
+
 /* Login → panel perangkat desa (backend otentikasi menyusul) */
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -12,22 +16,23 @@ export default function LoginForm() {
 
   function submit(e) {
     e.preventDefault();
-    if (!email.trim() || !pass.trim()) {
-      setError("Email dan kata sandi wajib diisi.");
+    if (email.trim().toLowerCase() !== USER || pass !== PASS) {
+      setError("Nama akun atau kata sandi salah.");
       return;
     }
+    window.localStorage.setItem(SESS_KEY, "1");
     router.push("/panel");
   }
 
   return (
     <form className="auth-form" onSubmit={submit}>
       <div className="field">
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">Nama Pengguna</label>
         <input
           className="input"
           id="email"
-          type="email"
-          placeholder="nama@desawayhuwi.id"
+          type="text"
+          placeholder="Nama akun desa"
           autoComplete="username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -52,11 +57,6 @@ export default function LoginForm() {
         <button className="btn btn-primary btn-lg btn-wide" type="submit">
           Masuk &rarr;
         </button>
-      </div>
-
-      <div className="role-note">
-        <span><b>Perangkat desa</b> — kelola data UMKM seluruh Dusun 6.</span>
-        <span><b>Pelaku UMKM</b> — perbarui profil usaha milik sendiri (mendatang).</span>
       </div>
     </form>
   );
