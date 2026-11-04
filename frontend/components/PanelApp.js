@@ -271,7 +271,7 @@ export default function PanelApp() {
           <div>
             <h1 className="auth-title">Login Perangkat Desa</h1>
             <p className="auth-sub" style={{ marginTop: 8 }}>
-              Kelola data &amp; iuran UMKM Dusun 6 &mdash; Desa Way Huwi
+              Dusun 6 &mdash; Desa Way Huwi
             </p>
           </div>
           <form className="auth-form" onSubmit={doLogin}>
