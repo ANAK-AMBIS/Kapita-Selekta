@@ -1951,3 +1951,44 @@ button.chip:hover {
 .pfield { display: flex; flex-direction: column; gap: 6px; }
 .pcheck { color: var(--muted); font-size: 13px; text-align: center; }
 .perr { color: #DC2626; font-size: 13px; text-align: center; }
+
+/* ============================================================
+   RESPONSIVE HP — panel & login (<=640px)
+   ============================================================ */
+@media (max-width: 640px) {
+  .pmain { padding: 20px 14px 48px; }
+  .ptitle { font-size: 22px; }
+  .pmobtabs { justify-content: center; gap: 20px; padding: 0 14px 12px; }
+
+  .pstatgrid { gap: 12px; }
+  .pstatcard { padding: 14px 16px; }
+  .pstat-num { font-size: 22px; }
+  .pstat-title { min-height: 40px; }
+
+  .pbar { margin: 12px 0; gap: 10px; }
+  .pfilter { flex: 1; }
+  .pfilter select { width: 100%; min-width: 0; }
+
+  .pinfo { flex-direction: column; align-items: flex-start; }
+
+  .pcell-biz { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .pbiz-img, .pbiz-ava { width: 56px; height: 56px; }
+
+  .iutable thead th.hjum,
+  .c-jum { min-width: 78px; }
+  .iutable thead th[style*="min-width: 88"],
+  .iutable td.c-bln { min-width: 76px; }
+
+  .pfoot { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  .pmodal { padding: 14px; align-items: center; }
+  .pmodal-card { max-height: 92vh; overflow-y: auto; padding: 20px; }
+  .pmodal-actions { flex-wrap: wrap; }
+  .pmodal-actions .pbtn-primary,
+  .pmodal-actions .pbtn-ghost,
+  .pmodal-actions .pbtn-danger { flex: 1; }
+  .pfoto-row { flex-direction: column; align-items: flex-start; }
+  .pdet-foto { height: 180px; }
+  .puser { padding: 4px; }
+  .pbtn-keluar { padding: 8px 14px; }
+}
