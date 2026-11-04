@@ -201,8 +201,8 @@ export default function PanelApp() {
   }
   function simpanUmkm(e) {
     e.preventDefault();
-    if (!fNama.trim() || !fPemilik.trim()) {
-      setUmkmErr("Nama usaha dan pemilik wajib diisi.");
+    if (!fNama.trim()) {
+      setUmkmErr("Nama usaha wajib diisi. Nama pemilik opsional.");
       return;
     }
     if (editId === null) {
@@ -458,7 +458,7 @@ export default function PanelApp() {
                               )}
                               <div>
                                 <div className="pbiz-name">{d.nama}</div>
-                                <div className="pbiz-owner">{d.pemilik}</div>
+                                {d.pemilik && <div className="pbiz-owner">{d.pemilik}</div>}
                               </div>
                             </div>
                           </td>
@@ -554,7 +554,7 @@ export default function PanelApp() {
                           <td className="c-no" style={{ width: 36 }}>{idx + 1}</td>
                           <td className="c-nama">
                             <div className="pbiz-name" style={{ fontSize: 13, lineHeight: "16px" }}>{d.nama}</div>
-                            <div className="pbiz-owner" style={{ lineHeight: "16px" }}>{d.pemilik}</div>
+                            {d.pemilik && <div className="pbiz-owner" style={{ lineHeight: "16px" }}>{d.pemilik}</div>}
                           </td>
                           {sel.map((s) => (
                             <td
@@ -612,7 +612,7 @@ export default function PanelApp() {
                 <h2 className="pmodal-title">{d.nama}</h2>
                 <button className="pico-btn" onClick={() => setDetailId(null)}>&#10005;</button>
               </div>
-              <p className="pdet-owner">{d.pemilik}</p>
+              {d.pemilik && <p className="pdet-owner">{d.pemilik}</p>}
               <dl className="pdet-rows">
                 <div><dt>Kategori</dt><dd>{d.kategori}</dd></div>
                 <div><dt>RT</dt><dd>{d.rt || "\u2014"}</dd></div>
@@ -646,7 +646,7 @@ export default function PanelApp() {
                 <input className="input" value={fNama} onChange={(e) => setFNama(e.target.value)} placeholder="Contoh: Warung Bu Sari" />
               </div>
               <div className="pfield">
-                <label className="plabel">Nama Pemilik</label>
+                <label className="plabel">Nama Pemilik (opsional)</label>
                 <input className="input" value={fPemilik} onChange={(e) => setFPemilik(e.target.value)} placeholder="Contoh: Sari Wulandari" />
               </div>
               <div className="prow-2">
