@@ -1437,8 +1437,8 @@ button.chip:hover {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(255, 255, 255, 0.95);
-  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--green-dark), var(--green));
+  border-bottom: 1px solid var(--green-dark);
 }
 
 .pnavin {
@@ -1452,8 +1452,8 @@ button.chip:hover {
   padding: 0 20px;
 }
 
-.pbrand-title { display: block; font-size: 15px; font-weight: 700; line-height: 1.35; }
-.pbrand-sub { display: block; font-size: 12px; color: var(--muted); line-height: 1.35; }
+.pbrand-title { display: block; font-size: 15px; font-weight: 700; line-height: 1.35; color: #FFFFFF; }
+.pbrand-sub { display: block; font-size: 12px; color: rgba(255, 255, 255, 0.75); line-height: 1.35; }
 
 .pnavtabs { display: flex; align-items: center; gap: 24px; }
 .ptab {
@@ -1462,13 +1462,13 @@ button.chip:hover {
   font-family: var(--font);
   font-size: 14px;
   font-weight: 600;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   padding: 0;
   transition: color 0.2s ease;
 }
-.ptab:hover { color: var(--text); }
-.ptab.aktif { color: var(--green-dark); font-weight: 800; }
+.ptab:hover { color: #FFFFFF; }
+.ptab.aktif { color: #FFFFFF; font-weight: 800; }
 
 .pmobtabs { display: flex; gap: 20px; padding: 0 20px 12px; }
 .pmobs { display: none; }
@@ -1483,9 +1483,9 @@ button.chip:hover {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 999px;
-  background: #FFFFFF;
+  background: rgba(255, 255, 255, 0.14);
   padding: 4px 12px 4px 4px;
 }
 .puser-ava {
@@ -1499,7 +1499,7 @@ button.chip:hover {
   font-size: 14px;
   font-weight: 700;
 }
-.puser-name { display: block; font-size: 13px; font-weight: 700; line-height: 1.35; }
+.puser-name { display: block; font-size: 13px; font-weight: 700; line-height: 1.35; color: #FFFFFF; }
 .puser-role { display: block; font-size: 11px; color: var(--muted); line-height: 1.35; }
 .puser-info { display: block; }
 @media (max-width: 900px) {
@@ -1507,9 +1507,9 @@ button.chip:hover {
 }
 
 .pbtn-keluar {
-  border: 1px solid var(--border);
-  background: #FFFFFF;
-  color: var(--green-dark);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: transparent;
+  color: #FFFFFF;
   font-family: var(--font);
   font-size: 14px;
   font-weight: 600;
@@ -1519,7 +1519,7 @@ button.chip:hover {
   white-space: nowrap;
   transition: all 0.2s ease;
 }
-.pbtn-keluar:hover { border-color: var(--green); background: var(--green-light); }
+.pbtn-keluar:hover { border-color: #FFFFFF; background: rgba(255, 255, 255, 0.15); }
 
 .pmain { max-width: 1280px; margin: 0 auto; padding: 32px 20px 64px; }
 
