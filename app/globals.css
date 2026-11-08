@@ -1584,7 +1584,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; heig
 }
 
 /* ruang untuk navbar tetap */
-.pub-hero-in { padding-top: 72px; }
+.pub-hero-in { padding-top: 72px; padding-bottom: 72px; }
+@media (max-width: 640px) {
+  .pub-hero-in { padding-bottom: 48px; }
+}
 
 /* pesan galat di panel admin */
 .panel-galat { margin-bottom: 16px; }

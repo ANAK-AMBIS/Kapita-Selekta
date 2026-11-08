@@ -72,7 +72,6 @@ export default function PublicDirectory({ data }) {
             Direktori UMKM Dusun 6, Desa Way Huwi, Jati Agung, Lampung Selatan:
             kuliner, sembako, kerajinan, hingga jasa milik tetangga sekitar Anda.
           </p>
-          <a href="#direktori" className="pub-cta">Lihat Daftar UMKM</a>
           <div className="pub-stats">
             <div><b>{data.length}</b><span>UMKM terdata</span></div>
             <div><b>{new Set(data.map((d) => d.kategori)).size}</b><span>Kategori usaha</span></div>
