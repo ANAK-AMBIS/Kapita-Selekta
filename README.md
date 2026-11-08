@@ -4,117 +4,113 @@
 
 Proyek Kelompok 4 ini dikembangkan sebagai bagian dari mata kuliah Kapita Selekta Informatika, Institut Teknologi Sumatera (ITERA) 2026.
 
-## Struktur Repository
+Satu codebase **Next.js** (App Router): halaman publik, panel admin, dan backend (API route + PostgreSQL) ada di repo yang sama.
 
-| Folder | Keterangan |
+## Struktur
+
+| Folder | Isi |
 |---|---|
-| `frontend/` | Aplikasi frontend Next.js yang berisi halaman login dan panel pengelolaan UMKM. |
-
-## Demo
-
-Aplikasi dapat diakses melalui GitHub Pages:
-
-**[https://erzaaf.github.io/kapsel/](https://erzaaf.github.io/kapsel/)**
-
-Gunakan akun berikut untuk masuk:
-
-- **Username:** `pemdes`
-- **Password:** `desa123`
-
-Saat ini aplikasi masih menggunakan data dummy dan `localStorage` untuk menyimpan data sementara di browser. Integrasi database akan dikerjakan pada tahap pengembangan backend.
+| `app/` | Halaman (`/`, `/umkm/[id]`, `/loginadmin`, `/panel`) dan API (`app/api/...`) |
+| `components/` | Komponen React (direktori publik, navbar, panel admin) |
+| `lib/server/` | Kode khusus server: koneksi database, sesi admin, validasi |
+| `lib/` | Helper bersama client/server (`api.js`, `umkm.js`, `useDebounce.js`) |
+| `data/umkm.js` | Daftar kategori + data contoh untuk seed database pertama kali |
+| `public/` | Aset statis (foto hero, logo) |
 
 ## Teknologi
 
-Teknologi yang digunakan dalam pengembangan proyek ini:
-
-- **Next.js** – Framework frontend menggunakan App Router.
+- **Next.js 15** (App Router) + **React 19** – Framework aplikasi.
 - **JavaScript** – Bahasa pemrograman.
-- **CSS** – Mengatur tampilan dan layout aplikasi.
-- **PostgreSQL (Neon)** – Database yang direncanakan untuk tahap backend.
+- **CSS** (`app/globals.css`) + ikon **Hugeicons** – Tampilan dan layout aplikasi.
+- **PostgreSQL** – Database (Neon di produksi; **PGlite** tertanam untuk lokal).
 - **Figma** – Perancangan UI/UX.
 - **GitHub** – Pengelolaan repository dan kolaborasi tim.
 
 ## Fitur Aplikasi
 
-### 1. Login
+### 1. Direktori Publik
 
-Halaman login digunakan sebagai akses masuk perangkat desa sebelum mengelola data UMKM.
+- Daftar UMKM dengan pencarian dan filter kategori.
+- Halaman detail UMKM (`/umkm/[id]`): info usaha, galeri foto, peta lokasi, tombol WhatsApp, dan UMKM serupa.
+- **Katalog produk** (foto, nama, harga, keterangan) yang bisa diaktifkan per UMKM; bila belum aktif, ditampilkan keterangan bahwa katalog belum diaktifkan penjual.
 
-### 2. Kelola Data UMKM
+### 2. Login
 
-Fitur ini digunakan untuk mencatat dan mengelola data UMKM di Dusun 6.
+Halaman login (`/loginadmin`) digunakan sebagai akses masuk perangkat desa sebelum mengelola data UMKM.
 
-Fitur yang tersedia:
+### 3. Kelola Data UMKM
+
 - Filter data berdasarkan RT (Semua RT, RT 05, 05A, 06, dan 06A).
-- Pencarian UMKM.
-- Filter berdasarkan kategori usaha.
-- Menambah, mengubah, dan menghapus data UMKM.
-- Melihat detail UMKM dengan memilih baris data.
-- Melihat jumlah UMKM yang terdata pada setiap RT.
+- Pencarian UMKM dan filter berdasarkan kategori usaha.
+- Menambah, mengubah, dan menghapus data UMKM (termasuk foto, galeri, link Google Maps, dan katalog produk).
+- Melihat detail UMKM dan jumlah UMKM yang terdata pada setiap RT.
 
-### 3. Iuran Bulanan
+### 4. Iuran Bulanan
 
-Halaman ini digunakan untuk mencatat pembayaran iuran bulanan UMKM.
-
-Fitur yang tersedia:
-- Rekap pembayaran berdasarkan RT.
-- Pencatatan pembayaran untuk periode Januari hingga Desember.
-- Melihat jumlah pembayaran setiap UMKM.
-- Menghitung total iuran setiap RT secara otomatis.
-- Mengganti tahun pencatatan.
+- Rekap dan pencatatan pembayaran iuran per RT untuk periode Januari hingga Desember.
+- Menghitung total iuran setiap RT secara otomatis dan mengganti tahun pencatatan.
 - Menambah dan menghapus catatan pembayaran melalui tabel.
 
-Nominal iuran awal ditetapkan sebesar **Rp10.000 per bulan**.
+Nominal iuran awal ditetapkan sebesar **Rp10.000 per bulan**. Semua data tersimpan di database.
 
-Seluruh perubahan data pembayaran saat ini disimpan menggunakan `localStorage` pada browser.
-
-## Menjalankan Proyek
+## Menjalankan di lokal
 
 Pastikan Node.js dan npm sudah terpasang.
 
-1. Clone repository:
+```bash
+git clone https://github.com/erzaaf/kapsel.git
+cd kapsel
+npm install
+npm run dev
+```
 
-   ```bash
-   git clone https://github.com/erzaaf/kapsel.git
-   ```
+Buka `http://localhost:3000`. Panel admin: `/loginadmin` (akun demo `pemdes` / `desa123`).
 
-2. Masuk ke folder frontend:
+Tanpa konfigurasi apa pun, database memakai **PGlite** yang disimpan di folder `.data/` (tidak ikut di-commit). Tabel dibuat otomatis dan diisi data contoh saat pertama kali dijalankan. Hapus folder `.data/` untuk mengulang dari data contoh.
 
-   ```bash
-   cd kapsel/frontend
-   ```
+### Pakai PostgreSQL / Neon
 
-3. Install dependencies:
+Salin `.env.example` jadi `.env.local`, lalu isi:
 
-   ```bash
-   npm install
-   ```
+| Variabel | Keterangan |
+|---|---|
+| `DATABASE_URL` | Connection string PostgreSQL (mis. dari Neon). Kosong = PGlite lokal |
+| `SESSION_SECRET` | String acak panjang untuk menandatangani cookie sesi. **Wajib diganti di produksi** |
+| `ADMIN_USER` / `ADMIN_PASS` | Akun admin panel |
 
-4. Jalankan aplikasi:
+### Pindah data lokal (PGlite) ke Neon
 
-   ```bash
-   npm run dev
-   ```
+Setelah `DATABASE_URL` diisi di `.env.local`:
 
-5. Buka aplikasi melalui browser:
+```bash
+node scripts/migrasi-neon.cjs --dry-run   # cek isi sumber dulu
+node scripts/migrasi-neon.cjs             # buat skema + salin umkm & iuran
+```
 
-   ```text
-   http://localhost:3000
-   ```
+Skrip menyalin apa adanya (id dipertahankan), mengosongkan tabel tujuan lebih dulu supaya idempoten, lalu menyetel ulang sequence `umkm.id`.
+
+## Dokumentasi lain
+
+- [`docs/foto-gmaps.md`](docs/foto-gmaps.md) — cara mengambil foto usaha dari Google Maps, mengecilkannya, dan memasukkannya ke database (termasuk keterangan izin pemakaian foto).
+
+## API
+
+| Method | Endpoint | Akses | Keterangan |
+|---|---|---|---|
+| GET | `/api/umkm` | publik | Daftar UMKM |
+| GET | `/api/umkm/:id` | publik | Detail UMKM |
+| POST | `/api/umkm` | admin | Tambah UMKM |
+| PUT | `/api/umkm/:id` | admin | Ubah UMKM |
+| DELETE | `/api/umkm/:id` | admin | Hapus UMKM (beserta iurannya) |
+| GET | `/api/iuran` | admin | Semua catatan iuran `{ "<id>\|<YYYY-MM>": nominal }` |
+| PUT | `/api/iuran` | admin | `{ umkmId, bulan, nominal }`; nominal `0` = hapus |
+| POST | `/api/auth/login` | publik | `{ username, password }` → cookie sesi |
+| POST | `/api/auth/logout` | - | Hapus cookie sesi |
+| GET | `/api/auth/me` | - | Admin yang sedang login |
 
 ## Deployment
 
-Aplikasi di-deploy menggunakan GitHub Pages melalui GitHub Actions.
-
-File konfigurasi deployment berada di:
-
-```text
-.github/workflows/deploy.yml
-```
-
-Konfigurasi Next.js menggunakan `basePath: '/kapsel'` agar aplikasi dapat berjalan pada subpath GitHub Pages.
-
-Setiap perubahan yang di-push ke branch `main` akan memicu proses deployment secara otomatis.
+Karena sekarang ada backend, situs **tidak bisa lagi di GitHub Pages** (statis). Deploy ke hosting Node.js, misalnya **Vercel**: import repo, isi `DATABASE_URL` (Neon), `SESSION_SECRET`, `ADMIN_USER`, `ADMIN_PASS` di Environment Variables. PGlite hanya untuk lokal; di produksi wajib pakai `DATABASE_URL`.
 
 ## Tim Pengembang
 

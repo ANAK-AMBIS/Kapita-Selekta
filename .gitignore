@@ -1,4 +1,11 @@
-seb_bot/key.txt
-seb_bot/oai_key.txt
-seb_bot/.venv/
-seb_bot/__pycache__/
+node_modules/
+.next/
+out/
+.env*.local
+
+# database lokal (PGlite)
+.data/
+
+
+_tmp_foto/
+.claude/
