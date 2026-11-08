@@ -1,51 +1,124 @@
-# Kapita Selekta 2026 — Panel UMKM Dusun 6, Desa Way Huwi
+# Panel UMKM Dusun 6, Desa Way Huwi
 
-**Kelola Data & Iuran Bulanan UMKM Berbasis Web untuk Meningkatkan Efektivitas Pengelolaan di Desa Way Huwi** — Kelompok 4, Kapita Selekta Informatika ITERA 2026.
+**Kelola Data & Iuran Bulanan UMKM Berbasis Web untuk Meningkatkan Efektivitas Pengelolaan di Desa Way Huwi**
 
-## Struktur Repo
+Proyek Kelompok 4 ini dikembangkan sebagai bagian dari mata kuliah Kapita Selekta Informatika, Institut Teknologi Sumatera (ITERA) 2026.
+
+## Struktur Repository
 
 | Folder | Keterangan |
 |---|---|
-| `frontend/` | **Frontend Next.js** — login perangkat desa + panel **Kelola Data** & **Iuran Bulanan** |
+| `frontend/` | Aplikasi frontend Next.js yang berisi halaman login dan panel pengelolaan UMKM. |
 
-> Backup desain HTML statis versi pertama dihapus dari repo (masih tersimpan di riwayat commit).
+## Demo
 
-## Web Live (GitHub Pages)
+Aplikasi dapat diakses melalui GitHub Pages:
 
-Panel sudah ter-deploy otomatis setiap push ke `main`:
+**[https://erzaaf.github.io/kapsel/](https://erzaaf.github.io/kapsel/)**
 
-**<https://erzaaf.github.io/kapsel/>** → login → panel
+Gunakan akun berikut untuk masuk:
 
-- Deploy statik via GitHub Actions (`.github/workflows/deploy.yml`), basePath `/kapsel`
-- Data demo (dummy + localStorage) — backend PostgreSQL (Neon) menyusul
+- **Username:** `pemdes`
+- **Password:** `desa123`
 
-## Teknologi (sesuai proposal)
+Saat ini aplikasi masih menggunakan data dummy dan `localStorage` untuk menyimpan data sementara di browser. Integrasi database akan dikerjakan pada tahap pengembangan backend.
 
-1. Framework: **Next.js** (App Router)
-2. Bahasa: **JavaScript**
-3. Styling: **CSS** (design system di `frontend/app/globals.css`)
-4. Database: **PostgreSQL (Neon)** — *tahap backend; data saat ini masih dummy di `frontend/data/umkm.js` + localStorage*
-5. Desain UI/UX: **Figma**
-6. Kolaborasi: **GitHub**
+## Teknologi
 
-## Fitur Frontend
+Teknologi yang digunakan dalam pengembangan proyek ini:
 
-- **Login** (`/`) — gate panel, kredensial demo `pemdes` / `desa123`
-- **Panel Perangkat Desa** (`/panel`) — dua tab:
-  - **Kelola Data**: pil RT (Semua RT / RT 05 / 05A / 06 / 06A), pencarian & filter kategori, tambah/ubah/hapus UMKM (modal + konfirmasi), hitungan jumlah UMKM terdata per RT, klik baris untuk kartu detail UMKM
-  - **Iuran Bulanan**: buku iuran per RT — 12 kolom bulan + kolom **JUMLAH** + baris **JUMLAH RT**, klik sel bulan untuk catat/hapus pembayaran (default Rp 10.000), dropdown tahun, rekap otomatis
-- Catatan pembayaran tersimpan sementara di `localStorage` browser (backend database menyusul)
+- **Next.js** – Framework frontend menggunakan App Router.
+- **JavaScript** – Bahasa pemrograman.
+- **CSS** – Mengatur tampilan dan layout aplikasi.
+- **PostgreSQL (Neon)** – Database yang direncanakan untuk tahap backend.
+- **Figma** – Perancangan UI/UX.
+- **GitHub** – Pengelolaan repository dan kolaborasi tim.
 
-## Menjalankan
+## Fitur Aplikasi
 
-```bash
-cd frontend
-npm install
-npm run dev
+### 1. Login
+
+Halaman login digunakan sebagai akses masuk perangkat desa sebelum mengelola data UMKM.
+
+### 2. Kelola Data UMKM
+
+Fitur ini digunakan untuk mencatat dan mengelola data UMKM di Dusun 6.
+
+Fitur yang tersedia:
+- Filter data berdasarkan RT (Semua RT, RT 05, 05A, 06, dan 06A).
+- Pencarian UMKM.
+- Filter berdasarkan kategori usaha.
+- Menambah, mengubah, dan menghapus data UMKM.
+- Melihat detail UMKM dengan memilih baris data.
+- Melihat jumlah UMKM yang terdata pada setiap RT.
+
+### 3. Iuran Bulanan
+
+Halaman ini digunakan untuk mencatat pembayaran iuran bulanan UMKM.
+
+Fitur yang tersedia:
+- Rekap pembayaran berdasarkan RT.
+- Pencatatan pembayaran untuk periode Januari hingga Desember.
+- Melihat jumlah pembayaran setiap UMKM.
+- Menghitung total iuran setiap RT secara otomatis.
+- Mengganti tahun pencatatan.
+- Menambah dan menghapus catatan pembayaran melalui tabel.
+
+Nominal iuran awal ditetapkan sebesar **Rp10.000 per bulan**.
+
+Seluruh perubahan data pembayaran saat ini disimpan menggunakan `localStorage` pada browser.
+
+## Menjalankan Proyek
+
+Pastikan Node.js dan npm sudah terpasang.
+
+1. Clone repository:
+
+   ```bash
+   git clone https://github.com/erzaaf/kapsel.git
+   ```
+
+2. Masuk ke folder frontend:
+
+   ```bash
+   cd kapsel/frontend
+   ```
+
+3. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+4. Jalankan aplikasi:
+
+   ```bash
+   npm run dev
+   ```
+
+5. Buka aplikasi melalui browser:
+
+   ```text
+   http://localhost:3000
+   ```
+
+## Deployment
+
+Aplikasi di-deploy menggunakan GitHub Pages melalui GitHub Actions.
+
+File konfigurasi deployment berada di:
+
+```text
+.github/workflows/deploy.yml
 ```
 
-Buka `http://localhost:3000` → login → panel.
+Konfigurasi Next.js menggunakan `basePath: '/kapsel'` agar aplikasi dapat berjalan pada subpath GitHub Pages.
 
-## Tim
+Setiap perubahan yang di-push ke branch `main` akan memicu proses deployment secara otomatis.
 
-Kelompok 4 — Kapita Selekta Informatika, ITERA 2026.
+## Tim Pengembang
+
+**Kelompok 4**  
+Kapita Selekta Informatika  
+Institut Teknologi Sumatera (ITERA)  
+2026
