@@ -1,24 +1,7 @@
-import LoginForm from "@/components/LoginForm";
+import PublicDirectory from "@/components/PublicDirectory";
 
-export const metadata = { title: "Login Perangkat Desa" };
+export const metadata = { title: { absolute: "UMKM Way Huwi — Dusun 6, Desa Way Huwi" } };
 
 export default function Beranda() {
-  return (
-    <main className="auth-wrap">
-      <div className="auth-card">
-        <div>
-          <h1 className="auth-title">UMKM Way Huwi</h1>
-          <p className="auth-sub" style={{ marginTop: 8 }}>
-            Dusun 6 &mdash; Desa Way Huwi
-          </p>
-        </div>
-
-        <LoginForm />
-
-        <p className="auth-note">
-          Akun demo: <b>pemdes</b> / <b>desa123</b>
-        </p>
-      </div>
-    </main>
-  );
+  return <PublicDirectory />;
 }
