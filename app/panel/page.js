@@ -1,4 +1,5 @@
 import PanelApp from "@/components/PanelApp";
+import "./panel.css";
 
 export const metadata = { title: "UMKM Way Huwi - Panel" };
 

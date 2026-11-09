@@ -1,16 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useIngat } from "./ingat";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Add01Icon, Search01Icon, Cancel01Icon, PencilEdit02Icon, Delete02Icon, ArrowLeft01Icon, ArrowRight01Icon,
+} from "@hugeicons/core-free-icons";
 import { useDebounce } from "@/lib/useDebounce";
-import { KATEGORI, KATEGORI_META } from "@/data/umkm";
-import { RTS, PER_PAGE, rtOf, gradClass } from "@/lib/umkm";
+import { KATEGORI } from "@/data/umkm";
+import { RTS, PER_PAGE, rtOf } from "@/lib/umkm";
 import KategoriIcon from "@/components/KategoriIcon";
+import Pilihan from "./Pilihan";
 
-/* Tab "Kelola Data": filter RT/kategori, pencarian, tabel berhalaman */
+/* Tab "Data UMKM": ringkasan, filter RT/kategori, pencarian, tabel berhalaman */
 export default function KelolaTab({ data, rtKelola, setRtKelola, onTambah, onDetail, onUbah, onHapus }) {
-  const [cat, setCat] = useState("Semua");
-  const [q, setQ] = useState("");
-  const [page, setPage] = useState(1);
+  /* filter, pencarian, dan halaman diingat (lihat ingat.js) */
+  const [cat, setCat] = useIngat("kelola:kategori", "Semua", (v) => v === "Semua" || KATEGORI.includes(v));
+  const [q, setQ] = useIngat("kelola:cari", "", (v) => typeof v === "string");
+  const [page, setPage] = useIngat("kelola:halaman", 1, (v) => Number.isInteger(v) && v >= 1);
 
   const qDebounced = useDebounce(q, 300);
   const qu = qDebounced.trim().toLowerCase();
@@ -29,128 +35,163 @@ export default function KelolaTab({ data, rtKelola, setRtKelola, onTambah, onDet
   const curPage = Math.min(page, totalPage);
   const awal = (curPage - 1) * PER_PAGE;
   const tampil = cocok.slice(awal, awal + PER_PAGE);
+  const adaFilter = cat !== "Semua" || qu !== "";
+
+  const tanpaFoto = diRt.filter((d) => !d.foto).length;
 
   return (
     <>
       <div className="pheadrow">
-        <h1 className="ptitle">Kelola Data UMKM</h1>
-        <button className="pbtn-primary" onClick={onTambah}>+ Tambah UMKM</button>
+        <div>
+          <h1 className="ptitle">Data UMKM</h1>
+          <p className="psubtitle">
+            {diRt.length} usaha terdata{rtKelola === "Semua" ? "" : " di " + rtKelola}
+            {tanpaFoto > 0 && <>, {tanpaFoto} belum punya foto</>}.
+          </p>
+        </div>
+        <button type="button" className="pbtn-primary" onClick={onTambah}>
+          <HugeiconsIcon icon={Add01Icon} size={18} aria-hidden="true" />
+          Tambah UMKM
+        </button>
       </div>
 
-      <section>
-        {/* pemilih RT + hitungan */}
-        <div className="punders pmt-6">
-          {["Semua"].concat(RTS).map((r) => (
-            <button
-              key={r}
-              className={"putab" + (rtKelola === r ? " aktif" : "")}
-              onClick={() => { setRtKelola(r); setPage(1); }}
-            >
-              {r === "Semua" ? "Semua RT" : r}
-            </button>
-          ))}
-          <span className="pcount"><b>{diRt.length}</b> UMKM terdata</span>
-        </div>
+      {/* pemilih RT */}
+      <div className="pseg" role="group" aria-label="Pilih RT">
+        {["Semua"].concat(RTS).map((r) => (
+          <button
+            key={r}
+            type="button"
+            className={"pseg-btn" + (rtKelola === r ? " aktif" : "")}
+            aria-pressed={rtKelola === r}
+            onClick={() => { setRtKelola(r); setPage(1); }}
+          >
+            {r === "Semua" ? "Semua RT" : r}
+          </button>
+        ))}
+      </div>
 
+      <section className="pcard pmt-4" aria-label="Daftar UMKM">
         {/* pencarian + filter kategori */}
         <div className="pbar">
-          <div className="psearch">
-            <span className="pub-search-ico" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round">
-                <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" />
-              </svg>
-            </span>
+          <label className="psearch">
+            <HugeiconsIcon icon={Search01Icon} size={18} className="psearch-ico" aria-hidden="true" />
+            <span className="sr-only">Cari UMKM</span>
             <input
-              type="text"
+              type="search"
               value={q}
               onChange={(e) => { setQ(e.target.value); setPage(1); }}
-              placeholder="Cari nama usaha, pemilik, atau lokasi..."
-              aria-label="Cari UMKM"
+              placeholder="Cari nama usaha, pemilik, atau lokasi"
             />
-          </div>
-          <div className="pfilter">
-            <select
-              className="input pselect" id="fKat" value={cat} aria-label="Filter kategori"
-              onChange={(e) => { setCat(e.target.value); setPage(1); }}
-            >
-              <option value="Semua">Semua kategori</option>
-              {KATEGORI.map((k) => <option key={k} value={k}>{k}</option>)}
-            </select>
-          </div>
+            {q && (
+              <button type="button" className="psearch-x" aria-label="Hapus pencarian" onClick={() => { setQ(""); setPage(1); }}>
+                <HugeiconsIcon icon={Cancel01Icon} size={16} aria-hidden="true" />
+              </button>
+            )}
+          </label>
+          <Pilihan
+            className="pbar-pilih"
+            value={cat}
+            ariaLabel="Filter kategori"
+            onChange={(v) => { setCat(v); setPage(1); }}
+            options={[{ value: "Semua", label: "Semua kategori" }].concat(KATEGORI)}
+          />
         </div>
 
-        {/* tabel */}
-        <div className="pcard">
-          <div className="pscroll">
-            <table className="ptable">
-              <thead>
-                <tr>
-                  <th className="th-umkm">UMKM</th>
-                  <th>Kategori</th>
-                  <th>Lokasi</th>
-                  <th className="th-aksi"></th>
+        <div className="pscroll">
+          <table className="ptable ptable-kelola">
+            <thead>
+              <tr>
+                <th className="th-umkm">Usaha</th>
+                <th>Kategori</th>
+                <th>RT</th>
+                <th>Lokasi</th>
+                <th className="th-aksi"><span className="sr-only">Aksi</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {cocok.length === 0 && (
+                <tr className="prow-empty">
+                  <td colSpan={5} className="pempty">
+                    <strong>Tidak ada usaha yang cocok</strong>
+                    <span>
+                      {adaFilter
+                        ? "Coba kata kunci lain atau pilih kategori yang berbeda."
+                        : "Belum ada UMKM" + (rtKelola === "Semua" ? "" : " di " + rtKelola) + ". Klik Tambah UMKM untuk mulai."}
+                    </span>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {cocok.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="pempty">
-                      Belum ada UMKM{rtKelola === "Semua" ? "" : " di " + rtKelola} yang cocok.
-                    </td>
-                  </tr>
-                )}
-                {tampil.map((d) => {
-                  const meta = KATEGORI_META[d.kategori] || KATEGORI_META.Lainnya;
-                  return (
-                    <tr key={d.id} className="prow-klik" onClick={() => onDetail(d.id)}>
-                      <td>
-                        <div className="pcell-biz">
-                          {d.foto ? (
-                            <img className="pbiz-img" src={d.foto} alt={d.nama} />
-                          ) : (
-                            <span className={"pbiz-ava " + gradClass(d.kategori, KATEGORI)}><KategoriIcon kategori={d.kategori} size={20} /></span>
-                          )}
-                          <div>
-                            <div className="pbiz-name">{d.nama}</div>
-                            {d.pemilik && <div className="pbiz-owner">{d.pemilik}</div>}
-                          </div>
-                        </div>
-                      </td>
-                      <td><span className="pcat-txt">{d.kategori}</span></td>
-                      <td className="td-muted">{d.lokasi || "-"}</td>
-                      <td>
-                        <div className="pactions">
-                          <button
-                            className="pico-btn" title="Ubah" aria-label={"Ubah " + d.nama}
-                            onClick={(e) => { e.stopPropagation(); onUbah(d.id); }}
-                          >&#9998;</button>
-                          <button
-                            className="pico-btn pico-del" title="Hapus" aria-label={"Hapus " + d.nama}
-                            onClick={(e) => { e.stopPropagation(); onHapus(d.id); }}
-                          >&#128465;</button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div className="pfoot">
-            <span>
-              Menampilkan {cocok.length === 0 ? 0 : awal + 1}&ndash;{awal + tampil.length} dari {cocok.length} UMKM
-              {rtKelola === "Semua" ? "" : " - " + rtKelola}
-            </span>
+              )}
+              {tampil.map((d) => (
+                <tr key={d.id} className="prow-klik" onClick={() => onDetail(d.id)}>
+                  <td>
+                    <div className="pcell-biz">
+                      {d.foto ? (
+                        <img className="pbiz-img" src={d.foto} alt="" />
+                      ) : (
+                        <span className="pbiz-ava"><KategoriIcon kategori={d.kategori} size={20} /></span>
+                      )}
+                      <div className="pbiz-text">
+                        <button
+                          type="button"
+                          className="pbiz-name"
+                          onClick={(e) => { e.stopPropagation(); onDetail(d.id); }}
+                        >
+                          {d.nama}
+                        </button>
+                        {d.pemilik && <div className="pbiz-owner">{d.pemilik}</div>}
+                      </div>
+                    </div>
+                  </td>
+                  <td data-label="Kategori">{d.kategori}</td>
+                  <td data-label="RT" className="td-nowrap">{rtOf(d)}</td>
+                  <td data-label="Lokasi" className="td-muted td-lokasi">
+                    {d.lokasi || "-"}
+                  </td>
+                  <td className="td-aksi">
+                    <div className="pactions">
+                      <button
+                        type="button" className="pico-btn" title="Ubah" aria-label={"Ubah " + d.nama}
+                        onClick={(e) => { e.stopPropagation(); onUbah(d.id); }}
+                      >
+                        <HugeiconsIcon icon={PencilEdit02Icon} size={18} aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button" className="pico-btn pico-del" title="Hapus" aria-label={"Hapus " + d.nama}
+                        onClick={(e) => { e.stopPropagation(); onHapus(d.id); }}
+                      >
+                        <HugeiconsIcon icon={Delete02Icon} size={18} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="pfoot">
+          <span>
+            {cocok.length === 0
+              ? "0 usaha"
+              : <>Menampilkan <b>{awal + 1}&ndash;{awal + tampil.length}</b> dari <b>{cocok.length}</b> usaha</>}
+          </span>
+          {totalPage > 1 && (
             <span className="ppager">
-              <button className="ppage-btn" disabled={curPage <= 1} onClick={() => setPage(curPage - 1)}>
-                &larr; Sebelumnya
+              <button
+                type="button" className="ppage-btn" aria-label="Halaman sebelumnya"
+                disabled={curPage <= 1} onClick={() => setPage(curPage - 1)}
+              >
+                <HugeiconsIcon icon={ArrowLeft01Icon} size={18} aria-hidden="true" />
               </button>
-              <span>Halaman {curPage} dari {totalPage}</span>
-              <button className="ppage-btn" disabled={curPage >= totalPage} onClick={() => setPage(curPage + 1)}>
-                Berikutnya &rarr;
+              <span aria-live="polite">{curPage} / {totalPage}</span>
+              <button
+                type="button" className="ppage-btn" aria-label="Halaman berikutnya"
+                disabled={curPage >= totalPage} onClick={() => setPage(curPage + 1)}
+              >
+                <HugeiconsIcon icon={ArrowRight01Icon} size={18} aria-hidden="true" />
               </button>
             </span>
-          </div>
+          )}
         </div>
       </section>
     </>
