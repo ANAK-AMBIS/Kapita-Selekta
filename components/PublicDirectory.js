@@ -144,8 +144,6 @@ export default function PublicDirectory({ data }) {
           </div>
 </div>
 
-        <p className="pub-count">{cocok.length} UMKM ditemukan</p>
-
         {cocok.length === 0 ? (
           <p className="dir-empty">Tidak ada UMKM yang cocok dengan pencarian.</p>
         ) : (
