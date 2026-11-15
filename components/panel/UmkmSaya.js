@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { PencilEdit02Icon, Shield01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
+import { PencilEdit02Icon, Shield01Icon, CheckmarkCircle02Icon, WhatsappIcon } from "@hugeicons/core-free-icons";
 import { RTS } from "@/lib/umkm";
 import KategoriIcon from "@/components/KategoriIcon";
 
@@ -86,10 +86,6 @@ export default function UmkmSaya({ umkm: d, akun, onUbah, onGantiSandi }) {
           <div><dt>Foto galeri</dt><dd>{jmlGaleri} foto</dd></div>
         </dl>
 
-        <p className="pprofil-catatan">
-          Ingin pindah RT atau menutup usaha? Hubungi admin desa lewat WhatsApp, karena perubahan itu
-          tidak bisa dilakukan dari akun UMKM.
-        </p>
       </section>
 
       <section className="pcard pmt-4 pakun-saya" aria-label="Keamanan akun">
@@ -157,6 +153,16 @@ export default function UmkmSaya({ umkm: d, akun, onUbah, onGantiSandi }) {
             </div>
           </form>
         </div>
+      </section>
+
+      <section className="pcard pmt-4 ppindah" aria-label="Pindah atau menutup usaha">
+        <div className="pcard-head">
+          <h2 className="pcard-title">
+            <HugeiconsIcon icon={WhatsappIcon} size={18} aria-hidden="true" />
+            Ingin pindah atau menutup usaha?
+          </h2>
+        </div>
+        <p className="ppindah-teks">Hubungi pengurus Dusun 6 untuk menghapus atau mengubah RT</p>
       </section>
     </>
   );
