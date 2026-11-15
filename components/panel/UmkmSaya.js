@@ -158,8 +158,8 @@ export default function UmkmSaya({ umkm: d, akun, onUbah, onGantiSandi }) {
       <section className="pmt-4" aria-label="Pindah atau menutup usaha">
         <div className="pub-join-box">
           <div>
-            <h2 className="pub-join-title">Ingin pindah atau menutup usaha?</h2>
-            <p className="pub-join-desc">Hubungi pengurus Dusun 6 untuk menghapus atau mengubah RT</p>
+            <h2 className="pub-join-title">Ingin pindah RT atau menutup usaha?</h2>
+            <p className="pub-join-desc">Hubungi Pengurus Dusun 6</p>
           </div>
           <a
             className="btn btn-lg pub-join-btn"
