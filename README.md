@@ -36,7 +36,15 @@ Satu codebase **Next.js** (App Router): halaman publik, panel admin, dan backend
 
 ### 2. Login
 
-Halaman login (`/loginadmin`) digunakan sebagai akses masuk perangkat desa sebelum mengelola data UMKM.
+Halaman login (`/loginadmin`) dipakai dua jenis akun:
+
+- **Admin desa** — kredensial dari `ADMIN_USER` / `ADMIN_PASS` (env).
+- **Akun UMKM** — dibuat admin dari panel, disimpan di tabel `akun` (sandi di-hash scrypt).
+  Setelah masuk, pemilik usaha hanya melihat menu "UMKM Saya" dan "Iuran Saya".
+
+Alur pendaftaran UMKM: pemilik usaha menghubungi admin lewat WhatsApp (nomor ada di
+tombol hubungi pengurus) → admin membuka **Akun UMKM → Buatkan akun** → kredensial
+dikirim kembali lewat WhatsApp.
 
 ### 3. Kelola Data UMKM
 
@@ -44,6 +52,7 @@ Halaman login (`/loginadmin`) digunakan sebagai akses masuk perangkat desa sebel
 - Pencarian UMKM dan filter berdasarkan kategori usaha.
 - Menambah, mengubah, dan menghapus data UMKM (termasuk foto, galeri, link Google Maps, dan katalog produk).
 - Melihat detail UMKM dan jumlah UMKM yang terdata pada setiap RT.
+- Menandai UMKM yang sudah/belum punya akun panel.
 
 ### 4. Iuran Bulanan
 
@@ -52,6 +61,14 @@ Halaman login (`/loginadmin`) digunakan sebagai akses masuk perangkat desa sebel
 - Menambah dan menghapus catatan pembayaran melalui tabel.
 
 Nominal iuran awal ditetapkan sebesar **Rp10.000 per bulan**. Semua data tersimpan di database.
+
+### 5. Akun UMKM
+
+- Admin membuatkan akun untuk UMKM yang sudah terdata (satu akun per UMKM).
+- Kata sandi di-hash dengan scrypt; tidak pernah dikembalikan oleh API.
+- Admin bisa reset kata sandi, menonaktifkan, atau menghapus akun.
+- Pemilik UMKM bisa mengganti kata sandinya sendiri (wajib sandi lama).
+- Reset sandi / menonaktifkan akun langsung mematikan sesi yang sedang aktif.
 
 ## Menjalankan di lokal
 
@@ -64,7 +81,8 @@ npm install
 npm run dev
 ```
 
-Buka `http://localhost:3000`. Panel admin: `/loginadmin` (akun demo `pemdes` / `desa123`).
+Buka `http://localhost:3000`. Panel: `/loginadmin` (akun admin demo `pemdes` / `desa123`).
+Akun UMKM tidak punya akun bawaan — buat dari tab **Akun UMKM** setelah login sebagai admin.
 
 Tanpa konfigurasi apa pun, database memakai **PGlite** yang disimpan di folder `.data/` (tidak ikut di-commit). Tabel dibuat otomatis dan diisi data contoh saat pertama kali dijalankan. Hapus folder `.data/` untuk mengulang dari data contoh.
 
@@ -87,7 +105,10 @@ node scripts/migrasi-neon.cjs --dry-run   # cek isi sumber dulu
 node scripts/migrasi-neon.cjs             # buat skema + salin umkm & iuran
 ```
 
-Skrip menyalin apa adanya (id dipertahankan), mengosongkan tabel tujuan lebih dulu supaya idempoten, lalu menyetel ulang sequence `umkm.id`.
+Skrip menyalin apa adanya (id dipertahankan), mengosongkan tabel tujuan lebih dulu supaya idempoten,
+lalu menyetel ulang sequence `umkm.id`. Tabel `akun` ikut disalin, jadi kata sandi UMKM tidak perlu
+direset setelah pindah database. Perhatian: skrip mengosongkan `akun`, `iuran`, dan `umkm` di tujuan
+(`TRUNCATE ... CASCADE`), jadi jangan dijalankan ke database produksi yang sedang dipakai.
 
 ## Dokumentasi lain
 
@@ -100,13 +121,19 @@ Skrip menyalin apa adanya (id dipertahankan), mengosongkan tabel tujuan lebih du
 | GET | `/api/umkm` | publik | Daftar UMKM |
 | GET | `/api/umkm/:id` | publik | Detail UMKM |
 | POST | `/api/umkm` | admin | Tambah UMKM |
-| PUT | `/api/umkm/:id` | admin | Ubah UMKM |
+| PUT | `/api/umkm/:id` | admin, umkm (milik sendiri) | Ubah UMKM; role umkm tidak bisa mengubah RT |
 | DELETE | `/api/umkm/:id` | admin | Hapus UMKM (beserta iurannya) |
 | GET | `/api/iuran` | admin | Semua catatan iuran `{ "<id>\|<YYYY-MM>": nominal }` |
+| GET | `/api/iuran/saya` | umkm | Riwayat iuran sendiri `{ "YYYY-MM": nominal }` |
 | PUT | `/api/iuran` | admin | `{ umkmId, bulan, nominal }`; nominal `0` = hapus |
-| POST | `/api/auth/login` | publik | `{ username, password }` → cookie sesi |
+| GET | `/api/akun` | admin | Daftar akun UMKM |
+| POST | `/api/akun` | admin | `{ umkmId, username, password }` |
+| PUT | `/api/akun/:id` | admin | `{ username?, password?, aktif? }` |
+| DELETE | `/api/akun/:id` | admin | Hapus akun (data UMKM tetap) |
+| POST | `/api/auth/login` | publik | `{ username, password }` → cookie sesi + `{ user, role, umkmId }` |
 | POST | `/api/auth/logout` | - | Hapus cookie sesi |
-| GET | `/api/auth/me` | - | Admin yang sedang login |
+| GET | `/api/auth/me` | - | Sesi aktif `{ user, role, umkmId, namaUmkm }` |
+| PATCH | `/api/auth/password` | umkm | `{ passwordLama, passwordBaru }` |
 
 ## Deployment
 

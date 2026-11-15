@@ -1,6 +1,6 @@
 import LoginForm from "@/components/LoginForm";
 
-export const metadata = { title: "Login Admin", robots: { index: false, follow: false } };
+export const metadata = { title: "Masuk Panel UMKM", robots: { index: false, follow: false } };
 
 export default function LoginAdmin() {
   return (

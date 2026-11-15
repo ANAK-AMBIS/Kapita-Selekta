@@ -1,13 +1,29 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Store01Icon, Wallet01Icon, Logout03Icon } from "@hugeicons/core-free-icons";
+import { Store01Icon, Wallet01Icon, Logout03Icon, UserAccountIcon } from "@hugeicons/core-free-icons";
 
-const TABS = [
-  ["kelola", "Data UMKM", Store01Icon],
-  ["iuran", "Iuran Bulanan", Wallet01Icon],
+const IKON = {
+  kelola: Store01Icon,
+  iuran: Wallet01Icon,
+  akun: UserAccountIcon,
+  saya: Store01Icon,
+  "iuran-saya": Wallet01Icon,
+};
+
+const TAB_ADMIN = [
+  ["kelola", "Data UMKM"],
+  ["iuran", "Iuran Bulanan"],
+  ["akun", "Akun UMKM"],
 ];
 
-function Tabs({ tab, setTab }) {
-  return TABS.map(([id, label, icon]) => (
+const TAB_UMKM = [
+  ["saya", "UMKM Saya"],
+  ["iuran-saya", "Iuran Saya"],
+];
+
+const LABEL_ROLE = { admin: "Admin", umkm: "UMKM" };
+
+function Tabs({ tab, setTab, daftar }) {
+  return daftar.map(([id, label]) => (
     <button
       key={id}
       type="button"
@@ -15,13 +31,15 @@ function Tabs({ tab, setTab }) {
       aria-current={tab === id ? "page" : undefined}
       onClick={() => setTab(id)}
     >
-      <HugeiconsIcon icon={icon} size={18} aria-hidden="true" />
+      <HugeiconsIcon icon={IKON[id]} size={18} aria-hidden="true" />
       {label}
     </button>
   ));
 }
 
-export default function PanelNav({ tab, setTab, user, onKeluar }) {
+export default function PanelNav({ tab, setTab, user, role = "admin", onKeluar }) {
+  const daftar = role === "admin" ? TAB_ADMIN : TAB_UMKM;
+
   return (
     <header className="pnav">
       <div className="pnavin">
@@ -33,12 +51,13 @@ export default function PanelNav({ tab, setTab, user, onKeluar }) {
           </div>
         </div>
         <nav className="pnavtabs" aria-label="Menu panel">
-          <Tabs tab={tab} setTab={setTab} />
+          <Tabs tab={tab} setTab={setTab} daftar={daftar} />
         </nav>
         <div className="pnavr">
           <div className="puser" title={"Masuk sebagai " + user}>
             <span className="puser-ava" aria-hidden="true">{(user[0] || "?").toUpperCase()}</span>
             <span className="puser-name">{user}</span>
+            <span className={"puser-role " + role}>{LABEL_ROLE[role] || role}</span>
           </div>
           <button type="button" className="pbtn-keluar" onClick={onKeluar}>
             <HugeiconsIcon icon={Logout03Icon} size={18} aria-hidden="true" />
@@ -47,7 +66,7 @@ export default function PanelNav({ tab, setTab, user, onKeluar }) {
         </div>
       </div>
       <nav className="pmobtabs" aria-label="Menu panel">
-        <Tabs tab={tab} setTab={setTab} />
+        <Tabs tab={tab} setTab={setTab} daftar={daftar} />
       </nav>
     </header>
   );

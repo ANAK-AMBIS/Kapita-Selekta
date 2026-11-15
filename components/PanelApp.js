@@ -7,27 +7,40 @@ import { api } from "@/lib/api";
 import PanelNav from "./panel/PanelNav";
 import KelolaTab from "./panel/KelolaTab";
 import IuranTab from "./panel/IuranTab";
+import AkunTab from "./panel/AkunTab";
+import UmkmSaya from "./panel/UmkmSaya";
+import IuranSaya from "./panel/IuranSaya";
 import { DetailModal, UmkmFormModal, HapusModal, IuranModal } from "./panel/Modals";
+import { AkunBuatModal, AkunResetModal, AkunHapusModal } from "./panel/AkunModals";
 import { useIngat, bacaIngat, simpanIngat, hapusSemuaIngat } from "./panel/ingat";
 
 /* ============================================================
-   Panel Admin - Kelola Data + Iuran Bulanan
-   Data dari API (/api/umkm, /api/iuran), sesi via cookie (/api/auth)
+   Panel UMKM - dua role:
+   - admin : Data UMKM + Iuran Bulanan + Akun UMKM
+   - umkm  : UMKM Saya + Iuran Saya (hanya data miliknya sendiri)
+   Data dari API (/api/umkm, /api/iuran, /api/akun), sesi via cookie.
    ============================================================ */
+
+const TAB_ADMIN = ["kelola", "iuran", "akun"];
+const TAB_UMKM = ["saya", "iuran-saya"];
+const SEMUA_TAB = TAB_ADMIN.concat(TAB_UMKM);
+
+const urutNama = (a, b) => (a.nama_umkm || "").localeCompare(b.nama_umkm || "", "id");
 
 export default function PanelApp() {
   const router = useRouter();
   const [siap, setSiap] = useState(false);
-  const [user, setUser] = useState("");
+  const [sesi, setSesi] = useState(null);
   const [galat, setGalat] = useState("");
   const [gagalMuat, setGagalMuat] = useState(false);
   const [pesan, setPesan] = useState(""); /* konfirmasi singkat setelah aksi berhasil */
 
   const [data, setData] = useState([]);
   const [iuran, setIuran] = useState({});
+  const [akun, setAkun] = useState([]);
 
-  /* posisi terakhir admin diingat di perangkat ini (lihat panel/ingat.js) */
-  const [tab, setTab] = useIngat("tab", "kelola", (v) => v === "kelola" || v === "iuran");
+  /* posisi terakhir diingat di perangkat ini (lihat panel/ingat.js) */
+  const [tab, setTab] = useIngat("tab", "kelola", (v) => SEMUA_TAB.includes(v));
   const [rtKelola, setRtKelola] = useIngat("kelola:rt", "Semua", (v) => v === "Semua" || RTS.includes(v));
 
   /* modal yang sedang terbuka */
@@ -35,6 +48,13 @@ export default function PanelApp() {
   const [form, setForm] = useState(null); /* { id: null | number } */
   const [hapusId, setHapusId] = useState(null);
   const [paying, setPaying] = useState(null); /* { key, nama, bulanTeks } */
+  const [akunBuat, setAkunBuat] = useState(null); /* { umkmId } | null */
+  const [akunReset, setAkunReset] = useState(null); /* baris akun */
+  const [akunHapus, setAkunHapus] = useState(null); /* baris akun */
+
+  const admin = sesi?.role === "admin";
+  const daftarTab = sesi?.role === "umkm" ? TAB_UMKM : TAB_ADMIN;
+  const tabAktif = daftarTab.includes(tab) ? tab : daftarTab[0];
 
   /* cek sesi lalu muat data dari server */
   useEffect(() => {
@@ -42,11 +62,23 @@ export default function PanelApp() {
     (async () => {
       try {
         const me = await api("/auth/me");
-        const [d, i] = await Promise.all([api("/umkm"), api("/iuran")]);
+        let d, i, a = [];
+        if (me.role === "admin") {
+          const [du, di, da] = await Promise.all([api("/umkm"), api("/iuran"), api("/akun")]);
+          d = du.slice().reverse(); /* terbaru di atas */
+          i = di;
+          a = da;
+        } else {
+          const [row, iur] = await Promise.all([api("/umkm/" + me.umkmId), api("/iuran/saya")]);
+          d = [row];
+          /* samakan bentuk kunci dengan admin: "<id>|<YYYY-MM>" */
+          i = Object.fromEntries(Object.entries(iur).map(([bulan, nominal]) => [row.id + "|" + bulan, nominal]));
+        }
         if (batal) return;
-        setUser(me.user);
-        setData(d.slice().reverse()); /* terbaru di atas */
+        setSesi(me);
+        setData(d);
         setIuran(i);
+        setAkun(a);
         setSiap(true);
       } catch (err) {
         if (batal) return;
@@ -60,7 +92,7 @@ export default function PanelApp() {
   /* posisi scroll diingat per tab: dipulihkan saat panel siap atau tab berganti */
   useEffect(() => {
     if (!siap) return;
-    const kunci = "scroll:" + tab;
+    const kunci = "scroll:" + tabAktif;
     const y = bacaIngat(kunci, 0, (v) => typeof v === "number" && v >= 0);
     /* setTimeout, bukan requestAnimationFrame: rAF berhenti saat tab tidak terlihat */
     /* "instant": html di globals.css memakai scroll-behavior smooth, pemulihan tidak perlu animasi */
@@ -76,7 +108,7 @@ export default function PanelApp() {
       clearTimeout(tunda);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [siap, tab]);
+  }, [siap, tabAktif]);
 
   /* pesan berhasil hilang sendiri setelah 4 detik */
   useEffect(() => {
@@ -107,7 +139,7 @@ export default function PanelApp() {
     );
   }
 
-  if (gagalMuat) {
+  if (gagalMuat || !sesi) {
     return (
       <div className="pwrap pmuat">
         <div className="pgagal" role="alert">
@@ -120,11 +152,29 @@ export default function PanelApp() {
     );
   }
 
+  /* akun UMKM yang data usahanya sudah dihapus admin */
+  if (!admin && !data[0]) {
+    return (
+      <div className="pwrap pmuat">
+        <div className="pgagal" role="alert">
+          <h1>Data usaha tidak ditemukan</h1>
+          <p>Data UMKM untuk akun ini sudah tidak ada. Hubungi admin desa untuk mendaftarkannya kembali.</p>
+          <button type="button" className="pbtn-primary" onClick={keluar}>Keluar</button>
+        </div>
+      </div>
+    );
+  }
+
   const cari = (id) => data.find((x) => x.id === id);
+  const akunByUmkm = new Map(akun.map((a) => [a.umkm_id, a]));
+  const daftarUmkmTanpaAkun = data
+    .filter((d) => !akunByUmkm.has(d.id))
+    .map((d) => ({ id: d.id, nama: d.nama }))
+    .sort((a, b) => a.nama.localeCompare(b.nama, "id"));
 
   async function keluar() {
     await api("/auth/logout", { method: "POST" }).catch(() => {});
-    hapusSemuaIngat(); /* admin berikutnya di perangkat ini mulai dari awal */
+    hapusSemuaIngat(); /* pengguna berikutnya di perangkat ini mulai dari awal */
     router.replace("/");
   }
 
@@ -147,6 +197,7 @@ export default function PanelApp() {
     if (!ok) return false;
     setData((prev) => prev.filter((x) => x.id !== id));
     setIuran((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => k.split("|")[0] !== String(id))));
+    setAkun((prev) => prev.filter((a) => a.umkm_id !== id)); /* akun ikut terhapus di database (cascade) */
     setHapusId(null);
     setPesan(nama + " dihapus.");
     return true;
@@ -166,42 +217,112 @@ export default function PanelApp() {
     return true;
   }
 
+  /* ---------- aksi akun UMKM (admin) ---------- */
+  async function buatAkun(isi) {
+    const row = await aksi(() => api("/akun", { method: "POST", body: isi }));
+    if (!row) return false;
+    setAkun((prev) => [...prev, row].sort(urutNama));
+    setPesan("Akun untuk " + row.nama_umkm + " dibuat.");
+    return true;
+  }
+
+  async function resetSandiAkun(id, password) {
+    const row = await aksi(() => api("/akun/" + id, { method: "PUT", body: { password } }));
+    if (!row) return false;
+    setAkun((prev) => prev.map((a) => (a.id === row.id ? row : a)));
+    setPesan("Kata sandi " + row.username + " direset.");
+    return true;
+  }
+
+  async function toggleAkun(a) {
+    const row = await aksi(() => api("/akun/" + a.id, { method: "PUT", body: { aktif: !a.aktif } }));
+    if (!row) return false;
+    setAkun((prev) => prev.map((x) => (x.id === row.id ? row : x)));
+    setPesan("Akun " + row.username + (row.aktif ? " diaktifkan." : " dinonaktifkan."));
+    return true;
+  }
+
+  async function hapusAkun(id) {
+    const nama = akun.find((a) => a.id === id)?.username || "";
+    const ok = await aksi(() => api("/akun/" + id, { method: "DELETE" }));
+    if (!ok) return false;
+    setAkun((prev) => prev.filter((a) => a.id !== id));
+    setAkunHapus(null);
+    setPesan("Akun " + nama + " dihapus.");
+    return true;
+  }
+
+  /* ---------- ganti sandi sendiri (role umkm) ---------- */
+  async function gantiSandi(lama, baru) {
+    const ok = await aksi(() =>
+      api("/auth/password", { method: "PATCH", body: { passwordLama: lama, passwordBaru: baru } })
+    );
+    if (!ok) return false;
+    setPesan("Kata sandi diperbarui.");
+    return true;
+  }
+
   const jmlIuranOf = (id) => Object.keys(iuran).filter((k) => k.split("|")[0] === String(id)).length;
+  const akunSaya = admin ? null : { username: sesi.user };
 
   return (
     <div className="pwrap">
       <a className="pskip" href="#konten">Lewati ke konten</a>
-      <PanelNav tab={tab} setTab={setTab} user={user} onKeluar={keluar} />
+      <PanelNav tab={tabAktif} setTab={setTab} user={sesi.user} role={sesi.role} onKeluar={keluar} />
 
       <main className="pmain" id="konten" tabIndex={-1}>
-        {tab === "kelola" ? (
-          <KelolaTab
-            data={data}
-            rtKelola={rtKelola}
-            setRtKelola={setRtKelola}
-            onTambah={() => setForm({ id: null })}
-            onDetail={setDetailId}
-            onUbah={(id) => setForm({ id })}
-            onHapus={setHapusId}
+        {admin ? (
+          tabAktif === "kelola" ? (
+            <KelolaTab
+              data={data}
+              rtKelola={rtKelola}
+              setRtKelola={setRtKelola}
+              akunByUmkm={akunByUmkm}
+              onTambah={() => setForm({ id: null })}
+              onDetail={setDetailId}
+              onUbah={(id) => setForm({ id })}
+              onHapus={setHapusId}
+              onBuatAkun={(id) => setAkunBuat({ umkmId: id })}
+            />
+          ) : tabAktif === "iuran" ? (
+            <IuranTab
+              data={data}
+              iuran={iuran}
+              onBukaIuran={(key, nama, bulanTeks) => setPaying({ key, nama, bulanTeks })}
+            />
+          ) : (
+            <AkunTab
+              akun={akun}
+              data={data}
+              onBuat={(id) => setAkunBuat({ umkmId: id })}
+              onReset={setAkunReset}
+              onToggle={toggleAkun}
+              onHapus={setAkunHapus}
+            />
+          )
+        ) : tabAktif === "saya" ? (
+          <UmkmSaya
+            umkm={data[0]}
+            akun={akunSaya}
+            onUbah={() => setForm({ id: data[0].id })}
+            onGantiSandi={gantiSandi}
           />
         ) : (
-          <IuranTab
-            data={data}
-            iuran={iuran}
-            onBukaIuran={(key, nama, bulanTeks) => setPaying({ key, nama, bulanTeks })}
-          />
+          <IuranSaya umkm={data[0]} iuran={iuran} />
         )}
       </main>
 
-      {detailId !== null && cari(detailId) && (
+      {admin && detailId !== null && cari(detailId) && (
         <DetailModal
           umkm={cari(detailId)}
+          akun={akunByUmkm.get(detailId) || null}
           onClose={() => setDetailId(null)}
           onUbah={() => { setForm({ id: detailId }); setDetailId(null); }}
+          onBuatAkun={() => { setAkunBuat({ umkmId: detailId }); setDetailId(null); }}
         />
       )}
 
-      {form && (
+      {admin && form && (
         <UmkmFormModal
           awal={form.id === null ? null : cari(form.id)}
           rtDefault={rtKelola === "Semua" ? RTS[0] : rtKelola}
@@ -210,7 +331,18 @@ export default function PanelApp() {
         />
       )}
 
-      {hapusId !== null && cari(hapusId) && (
+      {/* role umkm hanya bisa mengubah data usahanya sendiri, tanpa tombol tambah/hapus */}
+      {!admin && form && data[0] && (
+        <UmkmFormModal
+          awal={data[0]}
+          rtDefault={data[0].rt || RTS[0]}
+          kunciRt
+          onSimpan={simpanUmkm}
+          onClose={() => setForm(null)}
+        />
+      )}
+
+      {admin && hapusId !== null && cari(hapusId) && (
         <HapusModal
           umkm={cari(hapusId)}
           jmlIuran={jmlIuranOf(hapusId)}
@@ -219,7 +351,7 @@ export default function PanelApp() {
         />
       )}
 
-      {paying && (
+      {admin && paying && (
         <IuranModal
           paying={paying}
           nilaiAwal={iuran[paying.key] || 0}
@@ -227,6 +359,23 @@ export default function PanelApp() {
           onHapus={() => setNilaiIuran(paying.key, 0)}
           onClose={() => setPaying(null)}
         />
+      )}
+
+      {admin && akunBuat && (
+        <AkunBuatModal
+          daftarUmkm={daftarUmkmTanpaAkun}
+          awalUmkmId={akunBuat.umkmId}
+          onSimpan={buatAkun}
+          onClose={() => setAkunBuat(null)}
+        />
+      )}
+
+      {admin && akunReset && (
+        <AkunResetModal akun={akunReset} onSimpan={resetSandiAkun} onClose={() => setAkunReset(null)} />
+      )}
+
+      {admin && akunHapus && (
+        <AkunHapusModal akun={akunHapus} onHapus={hapusAkun} onClose={() => setAkunHapus(null)} />
       )}
 
       {/* notifikasi di atas modal, supaya galat saat menyimpan tetap terlihat */}

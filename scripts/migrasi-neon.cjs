@@ -48,6 +48,17 @@ const SCHEMA = [
   `ALTER TABLE umkm ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION`,
   `ALTER TABLE umkm ADD COLUMN IF NOT EXISTS produk_aktif BOOLEAN NOT NULL DEFAULT false`,
   `ALTER TABLE umkm ADD COLUMN IF NOT EXISTS katalog JSONB NOT NULL DEFAULT '[]'::jsonb`,
+  /* akun role "umkm" (satu per UMKM). Ikut disalin supaya reset sandi
+     tidak perlu diulang setelah pindah database. */
+  `CREATE TABLE IF NOT EXISTS akun (
+     id         SERIAL PRIMARY KEY,
+     umkm_id    INTEGER NOT NULL UNIQUE REFERENCES umkm(id) ON DELETE CASCADE,
+     username   TEXT NOT NULL UNIQUE,
+     pass_hash  TEXT NOT NULL,
+     aktif      BOOLEAN NOT NULL DEFAULT true,
+     sesi_ver   INTEGER NOT NULL DEFAULT 1,
+     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+   )`,
 ];
 
 (async () => {
@@ -58,8 +69,15 @@ const SCHEMA = [
   const lokal = new PGlite(process.env.PGLITE_DIR || "./.data/pglite");
   const umkm = (await lokal.query("SELECT * FROM umkm ORDER BY id")).rows;
   const iuran = (await lokal.query("SELECT * FROM iuran ORDER BY umkm_id, bulan")).rows;
+  /* database lokal lama belum punya tabel akun */
+  let akun = [];
+  try {
+    akun = (await lokal.query("SELECT * FROM akun ORDER BY id")).rows;
+  } catch {
+    console.log("catatan: tabel akun belum ada di sumber, dilewati.");
+  }
   await lokal.close();
-  console.log(`sumber: ${umkm.length} UMKM, ${iuran.length} catatan iuran`);
+  console.log(`sumber: ${umkm.length} UMKM, ${iuran.length} catatan iuran, ${akun.length} akun`);
 
   if (DRY) {
     console.log(JSON.stringify(umkm.map((u) => ({ id: u.id, nama: u.nama })), null, 1));
@@ -77,8 +95,9 @@ const SCHEMA = [
 
   for (const s of SCHEMA) await q(s);
 
-  /* tabel tujuan dikosongkan supaya hasil migrasi = sumber (idempoten) */
-  await q("TRUNCATE iuran, umkm RESTART IDENTITY CASCADE");
+  /* tabel tujuan dikosongkan supaya hasil migrasi = sumber (idempoten).
+     akun ikut dikosongkan: tanpa ini FK umkm akan menghapusnya lewat CASCADE. */
+  await q("TRUNCATE akun, iuran, umkm RESTART IDENTITY CASCADE");
 
   for (const u of umkm) {
     await q(
@@ -94,11 +113,22 @@ const SCHEMA = [
   for (const i of iuran) {
     await q("INSERT INTO iuran (umkm_id, bulan, nominal) VALUES ($1,$2,$3)", [i.umkm_id, i.bulan, i.nominal]);
   }
+  for (const a of akun) {
+    await q(
+      `INSERT INTO akun (id, umkm_id, username, pass_hash, aktif, sesi_ver, created_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      [a.id, a.umkm_id, a.username, a.pass_hash, a.aktif, a.sesi_ver, a.created_at]
+    );
+  }
   await q("SELECT setval(pg_get_serial_sequence('umkm','id'), COALESCE((SELECT max(id) FROM umkm), 1))");
+  if (akun.length) {
+    await q("SELECT setval(pg_get_serial_sequence('akun','id'), (SELECT max(id) FROM akun))");
+  }
 
   const cek = await q("SELECT count(*)::int AS n FROM umkm");
   const cekI = await q("SELECT count(*)::int AS n FROM iuran");
-  console.log(`selesai: ${cek[0].n} UMKM, ${cekI[0].n} catatan iuran di Neon`);
+  const cekA = await q("SELECT count(*)::int AS n FROM akun");
+  console.log(`selesai: ${cek[0].n} UMKM, ${cekI[0].n} catatan iuran, ${cekA[0].n} akun di Neon`);
   await pool.end();
 })().catch((e) => {
   console.error("GAGAL:", e.message);

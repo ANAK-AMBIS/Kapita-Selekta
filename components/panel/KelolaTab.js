@@ -3,7 +3,7 @@
 import { useIngat } from "./ingat";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  Add01Icon, Search01Icon, Cancel01Icon, PencilEdit02Icon, Delete02Icon, ArrowLeft01Icon, ArrowRight01Icon,
+  Add01Icon, Search01Icon, Cancel01Icon, PencilEdit02Icon, Delete02Icon, ArrowLeft01Icon, ArrowRight01Icon, Key01Icon,
 } from "@hugeicons/core-free-icons";
 import { useDebounce } from "@/lib/useDebounce";
 import { KATEGORI } from "@/data/umkm";
@@ -12,7 +12,9 @@ import KategoriIcon from "@/components/KategoriIcon";
 import Pilihan from "./Pilihan";
 
 /* Tab "Data UMKM": ringkasan, filter RT/kategori, pencarian, tabel berhalaman */
-export default function KelolaTab({ data, rtKelola, setRtKelola, onTambah, onDetail, onUbah, onHapus }) {
+export default function KelolaTab({
+  data, rtKelola, setRtKelola, akunByUmkm, onTambah, onDetail, onUbah, onHapus, onBuatAkun,
+}) {
   /* filter, pencarian, dan halaman diingat (lihat ingat.js) */
   const [cat, setCat] = useIngat("kelola:kategori", "Semua", (v) => v === "Semua" || KATEGORI.includes(v));
   const [q, setQ] = useIngat("kelola:cari", "", (v) => typeof v === "string");
@@ -38,6 +40,7 @@ export default function KelolaTab({ data, rtKelola, setRtKelola, onTambah, onDet
   const adaFilter = cat !== "Semua" || qu !== "";
 
   const tanpaFoto = diRt.filter((d) => !d.foto).length;
+  const jmlAkun = akunByUmkm ? diRt.filter((d) => akunByUmkm.has(d.id)).length : 0;
 
   return (
     <>
@@ -46,7 +49,8 @@ export default function KelolaTab({ data, rtKelola, setRtKelola, onTambah, onDet
           <h1 className="ptitle">Data UMKM</h1>
           <p className="psubtitle">
             {diRt.length} usaha terdata{rtKelola === "Semua" ? "" : " di " + rtKelola}
-            {tanpaFoto > 0 && <>, {tanpaFoto} belum punya foto</>}.
+            {tanpaFoto > 0 && <>, {tanpaFoto} belum punya foto</>}
+            {akunByUmkm && <>, {jmlAkun} sudah punya akun</>}.
           </p>
         </div>
         <button type="button" className="pbtn-primary" onClick={onTambah}>
@@ -105,13 +109,14 @@ export default function KelolaTab({ data, rtKelola, setRtKelola, onTambah, onDet
                 <th>Kategori</th>
                 <th>RT</th>
                 <th>Lokasi</th>
+                <th>Akun</th>
                 <th className="th-aksi"><span className="sr-only">Aksi</span></th>
               </tr>
             </thead>
             <tbody>
               {cocok.length === 0 && (
                 <tr className="prow-empty">
-                  <td colSpan={5} className="pempty">
+                  <td colSpan={6} className="pempty">
                     <strong>Tidak ada usaha yang cocok</strong>
                     <span>
                       {adaFilter
@@ -147,8 +152,25 @@ export default function KelolaTab({ data, rtKelola, setRtKelola, onTambah, onDet
                   <td data-label="Lokasi" className="td-muted td-lokasi">
                     {d.lokasi || "-"}
                   </td>
+                  <td data-label="Akun">
+                    {akunByUmkm && akunByUmkm.has(d.id) ? (
+                      <span className={"pakun-badge" + (akunByUmkm.get(d.id).aktif ? " ok" : " mati")}>
+                        {akunByUmkm.get(d.id).aktif ? "Ada" : "Nonaktif"}
+                      </span>
+                    ) : (
+                      <span className="pakun-badge kosong">Belum</span>
+                    )}
+                  </td>
                   <td className="td-aksi">
                     <div className="pactions">
+                      {akunByUmkm && !akunByUmkm.has(d.id) && (
+                        <button
+                          type="button" className="pico-btn" title="Buatkan akun" aria-label={"Buatkan akun untuk " + d.nama}
+                          onClick={(e) => { e.stopPropagation(); onBuatAkun(d.id); }}
+                        >
+                          <HugeiconsIcon icon={Key01Icon} size={18} aria-hidden="true" />
+                        </button>
+                      )}
                       <button
                         type="button" className="pico-btn" title="Ubah" aria-label={"Ubah " + d.nama}
                         onClick={(e) => { e.stopPropagation(); onUbah(d.id); }}

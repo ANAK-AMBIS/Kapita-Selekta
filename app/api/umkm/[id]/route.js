@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/server/db";
-import { wajibAdmin } from "@/lib/server/auth";
+import { aksesPemilikUmkm, wajibAdmin, ADMIN } from "@/lib/server/auth";
 import { KOLOM, validasiUmkm, idValid } from "@/lib/server/umkm";
 import { koordinatDari } from "@/lib/server/maps";
 
@@ -16,21 +16,32 @@ export async function GET(_req, { params }) {
   return row ? NextResponse.json(row) : tidakAda();
 }
 
-/* PUT /api/umkm/:id - ubah UMKM (admin). Kolom yang tidak dikirim tetap. */
+/* PUT /api/umkm/:id - ubah UMKM.
+   Admin boleh semua; role "umkm" hanya data miliknya sendiri.
+   RT tidak bisa diubah oleh role umkm (pindah RT urusan admin). */
 export async function PUT(req, { params }) {
-  const tolak = await wajibAdmin();
-  if (tolak) return tolak;
   const id = idValid((await params).id);
   if (!id) return tidakAda();
+
+  const { sesi, tolak } = await aksesPemilikUmkm(id);
+  if (tolak) return tolak;
+
   const [lama] = await query(`SELECT ${KOLOM} FROM umkm WHERE id = $1`, [id]);
   if (!lama) return tidakAda();
-  const body = await req.json().catch(() => null);
-  const { data, error } = validasiUmkm({ ...lama, ...(body || {}) });
+
+  const body = (await req.json().catch(() => null)) || {};
+  const gabung = { ...lama, ...body };
+  if (sesi.role !== ADMIN) gabung.rt = lama.rt; /* RT hanya admin */
+
+  const { data, error } = validasiUmkm(gabung);
   if (error) return NextResponse.json({ error }, { status: 400 });
+
   /* koordinat dihitung ulang hanya bila link Maps berubah */
-  const titik = data.maps_url === lama.maps_url && lama.lat != null
-    ? { lat: lama.lat, lng: lama.lng }
-    : await koordinatDari(data.maps_url);
+  const titik =
+    data.maps_url === lama.maps_url && lama.lat != null
+      ? { lat: lama.lat, lng: lama.lng }
+      : await koordinatDari(data.maps_url);
+
   const [row] = await query(
     `UPDATE umkm SET nama=$2, pemilik=$3, kategori=$4, rt=$5, lokasi=$6, deskripsi=$7, produk=$8, jam=$9, telepon=$10, foto=$11, galeri=$12::jsonb, maps_url=$13, lat=$14, lng=$15, produk_aktif=$16, katalog=$17::jsonb
      WHERE id = $1 RETURNING ${KOLOM}`,

@@ -15,7 +15,7 @@ const MAKS_PRODUK = 20;
 const NOMINAL_CEPAT = [5000, 10000, 20000, 50000];
 
 /* ---------- Detail UMKM ---------- */
-export function DetailModal({ umkm: d, onClose, onUbah }) {
+export function DetailModal({ umkm: d, akun, onClose, onUbah, onBuatAkun }) {
   return (
     <Modal title={d.nama} onClose={onClose} className="pdet" hideHead>
       {d.foto ? (
@@ -36,9 +36,18 @@ export function DetailModal({ umkm: d, onClose, onUbah }) {
         <div><dt>RT</dt><dd>{d.rt || "-"}</dd></div>
         <div><dt>Alamat usaha</dt><dd>{d.lokasi || "-"}</dd></div>
         <div><dt>Katalog</dt><dd>{d.produk_aktif ? "Aktif" : "Nonaktif"}</dd></div>
+        {akun && (
+          <div>
+            <dt>Akun panel</dt>
+            <dd><code className="pakun-user">{akun.username}</code>{akun.aktif ? "" : " (nonaktif)"}</dd>
+          </div>
+        )}
       </dl>
       <div className="pmodal-actions">
         <button type="button" className="pbtn-ghost" onClick={onClose}>Tutup</button>
+        {!akun && onBuatAkun && (
+          <button type="button" className="pbtn-ghost" onClick={onBuatAkun}>Buatkan akun</button>
+        )}
         <button type="button" className="pbtn-primary" onClick={onUbah}>
           <HugeiconsIcon icon={PencilEdit02Icon} size={18} aria-hidden="true" />
           Ubah data
@@ -83,8 +92,9 @@ function PilihFile({ className, multiple = false, onPilih, ariaLabel, children }
 
 const kosongkanProduk = () => ({ nama: "", harga: "", keterangan: "", foto: "" });
 
-/* awal: data UMKM yang diubah, atau null untuk tambah baru */
-export function UmkmFormModal({ awal, rtDefault, onSimpan, onClose }) {
+/* awal: data UMKM yang diubah, atau null untuk tambah baru.
+   kunciRt: role umkm tidak boleh memindah RT (hanya admin). */
+export function UmkmFormModal({ awal, rtDefault, kunciRt = false, onSimpan, onClose }) {
   const [f, setF] = useState(() => ({
     nama: awal?.nama || "",
     pemilik: awal?.pemilik || "",
@@ -193,7 +203,14 @@ export function UmkmFormModal({ awal, rtDefault, onSimpan, onClose }) {
           </div>
           <div className="pfield">
             <span className="plabel" id="lblRt">RT</span>
-            <Pilihan id="fRt" labelId="lblRt" value={f.rt} options={RTS} onChange={(v) => setF({ ...f, rt: v })} />
+            {kunciRt ? (
+              <>
+                <div className="pakun-kunci" aria-labelledby="lblRt">{f.rt}</div>
+                <span className="pfoto-note">RT hanya bisa diubah admin. Hubungi admin bila usaha pindah RT.</span>
+              </>
+            ) : (
+              <Pilihan id="fRt" labelId="lblRt" value={f.rt} options={RTS} onChange={(v) => setF({ ...f, rt: v })} />
+            )}
           </div>
         </div>
         <div className="pfield">
