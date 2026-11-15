@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { PencilEdit02Icon, Shield01Icon, CheckmarkCircle02Icon, WhatsappIcon } from "@hugeicons/core-free-icons";
+import { PencilEdit02Icon, Shield01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
 import { RTS } from "@/lib/umkm";
 import KategoriIcon from "@/components/KategoriIcon";
 
@@ -155,14 +155,21 @@ export default function UmkmSaya({ umkm: d, akun, onUbah, onGantiSandi }) {
         </div>
       </section>
 
-      <section className="pcard pmt-4 ppindah" aria-label="Pindah atau menutup usaha">
-        <div className="pcard-head">
-          <h2 className="pcard-title">
-            <HugeiconsIcon icon={WhatsappIcon} size={18} aria-hidden="true" />
-            Ingin pindah atau menutup usaha?
-          </h2>
+      <section className="pmt-4" aria-label="Pindah atau menutup usaha">
+        <div className="pub-join-box">
+          <div>
+            <h2 className="pub-join-title">Ingin pindah atau menutup usaha?</h2>
+            <p className="pub-join-desc">Hubungi pengurus Dusun 6 untuk menghapus atau mengubah RT</p>
+          </div>
+          <a
+            className="btn btn-lg pub-join-btn"
+            href={"https://wa.me/6281234567890?text=" + encodeURIComponent("Halo, saya ingin pindah RT atau menutup usaha.")}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Hubungi via WhatsApp
+          </a>
         </div>
-        <p className="ppindah-teks">Hubungi pengurus Dusun 6 untuk menghapus atau mengubah RT</p>
       </section>
     </>
   );

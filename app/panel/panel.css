@@ -735,10 +735,6 @@ html:has(.pwrap) { scroll-padding-top: 80px; }
 .pwrap .pakun-saya-aksi { display: flex; justify-content: flex-end; }
 .pwrap .pakun-ok-teks { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--p-green-dark); }
 
-/* pindah / menutup usaha */
-.pwrap .ppindah { padding: 20px 24px 24px; }
-.pwrap .ppindah-teks { margin-top: 12px; font-size: 13px; line-height: 1.5; color: var(--p-muted); }
-
 /* riwayat iuran sendiri */
 .pwrap .piuran-catatan { margin-top: 12px; font-size: 13px; color: var(--p-muted); }
 .pwrap .piuran-list { list-style: none; margin: 0; padding: 0; }
