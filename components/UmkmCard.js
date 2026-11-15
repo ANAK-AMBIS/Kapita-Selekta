@@ -10,7 +10,7 @@ export default function UmkmCard({ umkm: d }) {
   return (
     <Link href={"/umkm/" + d.id} className="umkm-card pub-card">
       {d.foto ? (
-        <img className="card-img pub-img" src={d.foto} alt={d.nama} />
+        <img className="card-img pub-img" src={d.foto} alt={d.nama} loading="lazy" decoding="async" />
       ) : (
         <div className={"card-img " + meta.img}>
           <KategoriIcon kategori={d.kategori} size={56} className="img-ico" />
